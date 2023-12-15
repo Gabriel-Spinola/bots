@@ -1,7 +1,7 @@
 import 'dotenv/config'
 import { REST } from '@discordjs/rest';
 import { Routes } from 'discord.js';
-import command from './commands/ping'
+import command from './commands/ping.js'
 
 const rest = new REST().setToken(process.env.DISCORD_SECRET);
 

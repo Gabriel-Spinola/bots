@@ -1,6 +1,6 @@
 import 'dotenv/config'
-import { GatewayIntentBits, Events, Client, REST, Routes, Interaction, IntentsBitField, Status } from 'discord.js'
-import command from './commands/ping'
+import { GatewayIntentBits, Events, Client, REST, Routes } from 'discord.js'
+import command from './commands/ping.mjs'
 
 const client = new Client({ intents: [
   GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages,
@@ -28,12 +28,9 @@ client.on(Events.ClientReady, (client) => {
       console.error(error);
     }
   })()
-
 })
 
-client.on(Events.InteractionCreate, async (interaction: Interaction) => {
-	
-    console.log('\nINTERACTION\n')
+client.on(Events.InteractionCreate, async (interaction) => {
   if (!interaction.isChatInputCommand()) return;
 
   if (interaction.commandName === 'ping') {
@@ -42,7 +39,7 @@ client.on(Events.InteractionCreate, async (interaction: Interaction) => {
 
   try {
     await command.execute(interaction)
-  } catch (error: unknown) {
+  } catch (error) {
     console.error(error);
     
     if (interaction.replied || interaction.deferred) {
@@ -53,19 +50,4 @@ client.on(Events.InteractionCreate, async (interaction: Interaction) => {
   }
 })
 
-client.on(Events.MessageCreate, async message => {
-  if (message.content === `cardapio`) {
-      await message.reply({
-          content: "porra",
-      })
-
-      console.log('asasdsa')
-    }
-    console.log(message.content)
-})
-
 client.login(process.env.DISCORD_SECRET)
-
-export async function GET(req: Request) {
-  return Response.json({data:''}, {status: 200})
-}

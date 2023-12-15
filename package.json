@@ -4,7 +4,7 @@
   "description": "bot",
   "main": "app.ts",
   "scripts": {
-    "start": "nodemon dist/app.js",
+    "start": "nodemon src/app.mjs",
     "build": "rimraf dist && tsc",
     "ts.check": "tsc --project tsconfig.json",
     "add-build": "git add dist",
@@ -32,5 +32,8 @@
     "ts.check",
     "build",
     "add-build"
-  ]
+  ],
+  "devDependencies": {
+    "supabase": "^1.123.4"
+  }
 }
