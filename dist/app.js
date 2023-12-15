@@ -23,11 +23,17 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const config_json_1 = require("./config.json");
+require("dotenv/config");
 const discord_js_1 = __importStar(require("discord.js"));
 const client = new discord_js_1.default.Client({ intents: [discord_js_1.GatewayIntentBits.Guilds] });
 client.on(discord_js_1.Events.ClientReady, (client) => {
     console.log(`Logged as ${client.user.tag}`);
 });
-client.login(config_json_1.DISCORD_SECRET);
+client.on(discord_js_1.Events.InteractionCreate, async (interaction) => {
+    if (!interaction.isChatInputCommand()) {
+        return;
+    }
+    //const command = interaction.client.comm
+});
+client.login(process.env.DISCORD_SECRET);
 //# sourceMappingURL=app.js.map
