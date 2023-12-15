@@ -1,0 +1,33 @@
+{
+  "name": "telegram",
+  "version": "1.0.0",
+  "description": "bot",
+  "main": "app.ts",
+  "scripts": {
+    "start": "nodemon src/telegram/app.ts",
+    "build": "rimraf dist && tsc",
+    "ts.check": "tsc --project tsconfig.json",
+    "add-build": "git add dist",
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Gabriel-Spinola/bots.git"
+  },
+  "author": "Gabriel-Spinola",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Gabriel-Spinola/bots/issues"
+  },
+  "homepage": "https://github.com/Gabriel-Spinola/bots#readme",
+  "dependencies": {
+    "nodemon": "^3.0.2",
+    "pre-commit": "^1.2.2",
+    "rimraf": "^5.0.5"
+  },
+  "pre-commit": [
+    "ts.check",
+    "build",
+    "add-build"
+  ]
+}
