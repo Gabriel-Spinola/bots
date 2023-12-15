@@ -3,6 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.GET = void 0;
 require("dotenv/config");
 const discord_js_1 = require("discord.js");
 const ping_1 = __importDefault(require("./commands/ping"));
@@ -57,4 +58,8 @@ client.on(discord_js_1.Events.MessageCreate, async (message) => {
     console.log(message.content);
 });
 client.login(process.env.DISCORD_SECRET);
+async function GET(req) {
+    return Response.json({ data: '' }, { status: 200 });
+}
+exports.GET = GET;
 //# sourceMappingURL=app.js.map

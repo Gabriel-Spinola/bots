@@ -1,5 +1,5 @@
 import 'dotenv/config'
-import { GatewayIntentBits, Events, Client, REST, Routes, Interaction, IntentsBitField } from 'discord.js'
+import { GatewayIntentBits, Events, Client, REST, Routes, Interaction, IntentsBitField, Status } from 'discord.js'
 import command from './commands/ping'
 
 const client = new Client({ intents: [
@@ -65,3 +65,7 @@ client.on(Events.MessageCreate, async message => {
 })
 
 client.login(process.env.DISCORD_SECRET)
+
+export async function GET(req: Request) {
+  return Response.json({data:''}, {status: 200})
+}
