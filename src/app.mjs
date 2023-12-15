@@ -33,10 +33,6 @@ client.on(Events.ClientReady, (client) => {
 client.on(Events.InteractionCreate, async (interaction) => {
   if (!interaction.isChatInputCommand()) return;
 
-  if (interaction.commandName === 'ping') {
-		interaction.reply('Pong.')
-  }
-
   try {
     await command.execute(interaction)
   } catch (error) {

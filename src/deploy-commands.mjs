@@ -1,7 +1,7 @@
 import 'dotenv/config'
 import { REST } from '@discordjs/rest';
 import { Routes } from 'discord.js';
-import command from './commands/ping.js'
+import command from './commands/ping.mjs'
 
 const rest = new REST().setToken(process.env.DISCORD_SECRET);
 
@@ -15,7 +15,7 @@ const rest = new REST().setToken(process.env.DISCORD_SECRET);
 			{ body: [command.data.toJSON()] },
 		);
 
-		console.log(`Successfully reloaded ${data} application (/) commands.`);
+		console.log(`PONG`);
 	} catch (error) {
 		// And of course, make sure you catch and log any errors!
 		console.error(error);
