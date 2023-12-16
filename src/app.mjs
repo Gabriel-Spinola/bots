@@ -1,19 +1,27 @@
-// TELEGRAM
-// LINK `https://api.telegram.org/bot${process.env.TELEGRAM_SECRET}/setWebhook?url=${process.env.NGROK_URL}`
-
 import 'dotenv/config'
-import { GatewayIntentBits, Events, Client, REST, Routes } from 'discord.js'
+import { GatewayIntentBits, Events, Client, REST, Routes, Collection, MessageCollector } from 'discord.js'
 import command from './commands/ping.mjs'
+import { handleMessage } from './telegram.mjs'
 
 import express from 'express'
 
 const app = express()
 app.use(express.json())
 
-app.post('*', async function (req, res) {
-  console.log(req.body)
+export const messagesMap = new Map()
 
-  res.send("Hello, Post")
+app.post('*', async function (req, res) {
+  console.log(req.body.message)
+
+  if (req.body) {
+    const message = req.body.message
+
+    console.log('MESSAGE ID: ', message.message_id)
+    messagesMap.set(message.message_id, message)
+  }
+
+  console.log('MAP SIZE:', messagesMap.size)
+  res.send("none")
 })
 
 app.get('*', async function (req, res) {
@@ -28,11 +36,9 @@ app.listen(process.env.PORT || 4040, function (err) {
   console.log('Sever listening to port ' + 4040)
 })
 
-
 const client = new Client({ intents: [
   GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages,
   GatewayIntentBits.GuildMessageReactions, GatewayIntentBits.GuildMessageTyping, 
-  //GatewayIntentBits.MessageContent
 ]})
 
 function updateCommands() {
@@ -66,6 +72,11 @@ client.on(Events.InteractionCreate, async (interaction) => {
   if (!interaction.isChatInputCommand()) return;
 
   try {
+    console.log('DISCORD %d:', messagesMap.size)
+    messagesMap.forEach((message) => {
+      console.log('MESSAGES: ', message)
+    })
+
     await command.execute(interaction)
   } catch (error) {
     console.error(error);

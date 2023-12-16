@@ -1,4 +1,5 @@
 import { SlashCommandBuilder } from "discord.js";
+import { messagesMap } from "../app.mjs";
 
 export default {
 	data: new SlashCommandBuilder()
@@ -7,6 +8,9 @@ export default {
 	async execute(interaction) {
 		// interaction.user is the object representing the User who ran the command
 		// interaction.member is the GuildMember object, which represents the user in the specific guild
-		await interaction.reply(`PONG`);
+		
+		messagesMap.forEach(async message => {
+			await interaction.reply(message.text);
+		});
 	},
 };

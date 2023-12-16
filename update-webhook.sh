@@ -1,0 +1,1 @@
+poke net send -f /home/pingola/Desktop/bots/poke/telegram.json
