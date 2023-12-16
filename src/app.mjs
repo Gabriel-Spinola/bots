@@ -1,6 +1,7 @@
 import 'dotenv/config'
-import { GatewayIntentBits, Events, Client, REST, Routes, Collection, MessageCollector } from 'discord.js'
+import { GatewayIntentBits, Events, Client, REST, Routes, Message } from 'discord.js'
 import command from './commands/ping.mjs'
+import fs from 'fs'
 //https://youtu.be/COLDiMlmcoI?si=2DQRGIgKHfITKAve
 
 import express from 'express'
@@ -9,7 +10,12 @@ import { getImage } from './telegram.mjs'
 const app = express()
 app.use(express.json())
 
+/**
+ * @type {Map<string, any>}
+ */
 export const messagesMap = new Map()
+const chanelId = '1185317574414716981'
+const interval = 6000
 
 app.post('*', async function (req, res) {
   console.log(req.body.message)
@@ -19,11 +25,14 @@ app.post('*', async function (req, res) {
     
     if (message.photo) {
       const data = await getImage(message.photo[2].file_id)
-      
       console.log('IMAGE DATA:', data)
+
+      messagesMap.set(message.message_id, { message, img: data })
+
+      return
     }
     
-    messagesMap.set(message.message_id, message)
+    messagesMap.set(message.message_id, { message })
   }
 
   console.log('MAP SIZE:', messagesMap.size)
@@ -70,8 +79,35 @@ function updateCommands() {
 
 client.on(Events.ClientReady, (client) => {
   console.log(`Logged as ${client.user.tag}`)
-  
+
   updateCommands()
+
+  setInterval(() => {
+    const channel = client.channels.cache.get(chanelId);
+
+    if (!channel) {
+      console.error(`Channel with ID ${chanelId} not found.`);
+
+      return 
+    }
+
+    if (messagesMap.size < 0) {
+      return
+    }
+
+    messagesMap.forEach(async (message, key) => {
+      console.log(message)
+
+      await channel.send("oie")
+
+      if (message.img) {
+        await channel.send({ files: [{ attachment: message.img, name: 'name.jpg' }] })
+      }
+
+      await fs.promises.unlink(message.img);
+      messagesMap.delete(key)
+    })
+  }, interval)
 })
 
 client.on(Events.InteractionCreate, async (interaction) => {
@@ -86,12 +122,12 @@ client.on(Events.InteractionCreate, async (interaction) => {
 
     await command.execute(interaction)
   } catch (error) {
-    console.error(error);
+    console.error(error)
     
     if (interaction.replied || interaction.deferred) {
-      await interaction.followUp({ content: 'There was an error while executing this command!', ephemeral: true });
+      await interaction.followUp({ content: 'There was an error while executing this command!', ephemeral: true })
     } else {
-      await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
+      await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true })
     }
   }
 })
