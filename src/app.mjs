@@ -16,13 +16,13 @@ app.post('*', async function (req, res) {
 
   if (req.body) {
     const message = req.body.message
-
+    
     if (message.photo) {
       const data = await getImage(message.photo[2].file_id)
-
+      
       console.log('IMAGE DATA:', data)
     }
-
+    
     messagesMap.set(message.message_id, message)
   }
 

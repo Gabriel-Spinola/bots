@@ -16,7 +16,7 @@ async function getImageFile(filePath) {
     await fs.promises.mkdir(directory, { recursive: true });
     await fs.promises.writeFile(`${filePath}`, buffer)
 
-    return res.data
+    return filePath
   } catch(error) {
     console.error(error);
 

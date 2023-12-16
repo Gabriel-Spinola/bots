@@ -2,3 +2,8 @@ node_modules/
 *.env
 config.json
 poke/
+photos/*
+*.jpg
+*.png
+*.gif
+*.mp4
