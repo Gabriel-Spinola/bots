@@ -2,50 +2,80 @@ import 'dotenv/config'
 import { GatewayIntentBits, Events, Client, REST, Routes } from 'discord.js'
 import command from './commands/ping.mjs'
 
-export default async function handler(request, response) { 
-  const client = new Client({ intents: [
-    GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages,
-    GatewayIntentBits.GuildMessageReactions, GatewayIntentBits.GuildMessageTyping, 
-    //GatewayIntentBits.MessageContent
-  ]})
+import express from 'express'
 
-  client.on(Events.ClientReady, (client) => {
-    console.log(`Logged as ${client.user.tag}`)
-    const rest = new REST().setToken(process.env.DISCORD_SECRET);
+const app = express()
+app.use(express.json())
 
-    (async() => {
-      try {
-        console.log(`Started refreshing ${JSON.stringify(command)} application (/) commands.`);
+app.post('*', async function (req, res) {
+  console.log(req.body)
 
-        // The put method is used to fully refresh all commands in the guild with the current set
-        const data = await rest.put(
-          Routes.applicationCommands(process.env.CLIENT_ID),
-          { body: [command.data.toJSON()] },
-        );
+  res.send("Hello, Post")
+})
 
-        console.log(`Successfully reloaded ${JSON.stringify(data)} application (/) commands.`);
-      } catch (error) {
-        // And of course, make sure you catch and log any errors!
-        console.error(error);
-      }
-    })()
-  })
+app.get('*', async function (req, res) {
+  res.send("Hello, GET")
+})
 
-  client.on(Events.InteractionCreate, async (interaction) => {
-    if (!interaction.isChatInputCommand()) return;
+app.listen(process.env.PORT || 4040, function (err) {
+  if (err) {
+    console.log(err)
+  }
 
+  console.log('Sever listening to port ' + 4040)
+})
+
+
+const client = new Client({ intents: [
+  GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages,
+  GatewayIntentBits.GuildMessageReactions, GatewayIntentBits.GuildMessageTyping, 
+  //GatewayIntentBits.MessageContent
+]})
+
+function updateCommands() {
+  const rest = new REST().setToken(process.env.DISCORD_SECRET);
+
+  (async() => {
     try {
-      await command.execute(interaction)
-    } catch (error) {
-      console.error(error);
-      
-      if (interaction.replied || interaction.deferred) {
-        await interaction.followUp({ content: 'There was an error while executing this command!', ephemeral: true });
-      } else {
-        await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
-      }
-    }
-  })
+      console.log(`Started refreshing ${JSON.stringify(command)} application (/) commands.`);
 
-  client.login(process.env.DISCORD_SECRET)
+      // The put method is used to fully refresh all commands in the guild with the current set
+      const data = await rest.put(
+        Routes.applicationCommands(process.env.CLIENT_ID),
+        { body: [command.data.toJSON()] },
+      );
+
+      console.log(`Successfully reloaded ${JSON.stringify(data)} application (/) commands.`);
+    } catch (error) {
+      // And of course, make sure you catch and log any errors!
+      console.error(error);
+    }
+  })()
 }
+
+client.on(Events.ClientReady, (client) => {
+  console.log(`Logged as ${client.user.tag}`)
+  
+  updateCommands()
+})
+
+client.on(Events.InteractionCreate, async (interaction) => {
+  if (!interaction.isChatInputCommand()) return;
+
+  try {
+    await command.execute(interaction)
+  } catch (error) {
+    console.error(error);
+    
+    if (interaction.replied || interaction.deferred) {
+      await interaction.followUp({ content: 'There was an error while executing this command!', ephemeral: true });
+    } else {
+      await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
+    }
+  }
+})
+
+client.login(process.env.DISCORD_SECRET)
+
+// TELEGRAM
+// LINK `https://api.telegram.org/bot${process.env.TELEGRAM_SECRET}/setWebhook?url=${process.env.NGROK_URL}`
