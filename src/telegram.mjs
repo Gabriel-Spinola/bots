@@ -1,9 +1,22 @@
 import axios from "axios";
-import getAxiosInstance, { BASE_URL } from "./axios.mjs";
+import getAxiosInstance, { BASE_URL, FILE_BASE_URL } from "./axios.mjs";
+import fs from 'fs'
+import path from "path";
 
+/**
+ * @param {string} filePath 
+ */
 async function getImageFile(filePath) {
   try {
-    const res = await axios.get(`${BASE_URL}${filePath}`)
+    const res = await axios.get(`${FILE_BASE_URL}${filePath}`, { responseType: 'arraybuffer' })
+
+    const buffer = Buffer.from(res.data, 'binary')
+    const directory = path.dirname(filePath.substring(0, 5));
+
+    await fs.promises.mkdir(directory, { recursive: true });
+    await fs.promises.writeFile(`${filePath}`, buffer)
+
+    return res.data
   } catch(error) {
     console.error(error);
 
@@ -20,12 +33,17 @@ export async function getImage(fileId) {
     const res = await axios.get(`${BASE_URL}getFile?file_id=${fileId}`)
     
     if (!res.data.ok) {
-      throw new Error('respons\'s not okay')
+      throw new Error('respons\'s not okay. AT GET getfile')
     } 
 
+    console.log(res.data.result.file_path)
+    const imageData = await getImageFile(res.data.result.file_path)
+    console.log(imageData)
     
+    return imageData
   } catch (error) {
     console.error(error);
+
     return null
   }
 }
