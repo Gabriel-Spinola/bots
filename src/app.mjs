@@ -1,3 +1,6 @@
+// TELEGRAM
+// LINK `https://api.telegram.org/bot${process.env.TELEGRAM_SECRET}/setWebhook?url=${process.env.NGROK_URL}`
+
 import 'dotenv/config'
 import { GatewayIntentBits, Events, Client, REST, Routes } from 'discord.js'
 import command from './commands/ping.mjs'
@@ -76,6 +79,3 @@ client.on(Events.InteractionCreate, async (interaction) => {
 })
 
 client.login(process.env.DISCORD_SECRET)
-
-// TELEGRAM
-// LINK `https://api.telegram.org/bot${process.env.TELEGRAM_SECRET}/setWebhook?url=${process.env.NGROK_URL}`
