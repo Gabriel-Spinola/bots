@@ -1,5 +1,5 @@
-# bots
-Bot I'm working on for a freelance
+# Wellington Bot
+Bot for sending messages from a telegram chat to a discord chat
 
 ## TODO
 - [X] Read messages from telegram
