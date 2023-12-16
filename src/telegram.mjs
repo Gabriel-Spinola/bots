@@ -36,9 +36,8 @@ export async function getImage(fileId) {
       throw new Error('respons\'s not okay. AT GET getfile')
     } 
 
-    console.log(res.data.result.file_path)
+    console.log(res.data.result)
     const imageData = await getImageFile(res.data.result.file_path)
-    console.log(imageData)
     
     return imageData
   } catch (error) {

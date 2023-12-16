@@ -10,15 +10,13 @@ import { getImage } from './telegram.mjs'
 const app = express()
 app.use(express.json())
 
-/**
- * @type {Map<string, any>}
- */
 export const messagesMap = new Map()
+
 const chanelId = '1185317574414716981'
-const interval = 6000
+const interval = 500
 
 app.post('*', async function (req, res) {
-  console.log(req.body.message)
+  console.log('BODY: ', req.body)
 
   if (req.body) {
     const message = req.body.message
@@ -28,11 +26,9 @@ app.post('*', async function (req, res) {
       console.log('IMAGE DATA:', data)
 
       messagesMap.set(message.message_id, { message, img: data })
-
-      return
+    } else {
+      messagesMap.set(message.message_id, { message })
     }
-    
-    messagesMap.set(message.message_id, { message })
   }
 
   console.log('MAP SIZE:', messagesMap.size)
@@ -80,33 +76,44 @@ function updateCommands() {
 client.on(Events.ClientReady, (client) => {
   console.log(`Logged as ${client.user.tag}`)
 
-  updateCommands()
-
   setInterval(() => {
     const channel = client.channels.cache.get(chanelId);
 
     if (!channel) {
-      console.error(`Channel with ID ${chanelId} not found.`);
-
-      return 
-    }
-
-    if (messagesMap.size < 0) {
+      console.error(`Channel with ID ${chanelId} not found.`)
       return
     }
 
-    messagesMap.forEach(async (message, key) => {
-      console.log(message)
+    if (messagesMap.size <= 0) {
+      return
+    }
 
-      await channel.send("oie")
+    const keysToDelete = []
+
+    messagesMap.forEach((message, key) => {
+      console.log('KEY: ', key)
 
       if (message.img) {
-        await channel.send({ files: [{ attachment: message.img, name: 'name.jpg' }] })
+        (async() => {
+          await channel.send({ files: [{ attachment: message.img, name: 'name.jpg' }] })
+          channel.send(message.message.caption || '')
+        })()
       }
 
-      await fs.promises.unlink(message.img);
-      messagesMap.delete(key)
+      keysToDelete.push(key)
     })
+
+    console.log(keysToDelete.length)
+
+    // Now, delete the keys after the forEach loop
+    keysToDelete.forEach((key) => {
+      //fs.unlinkSync(message[key].img)
+      console.log('DELETED: ', key)
+
+      messagesMap.delete(key);
+    })
+
+    console.log(messagesMap.size)
   }, interval)
 })
 
@@ -114,12 +121,6 @@ client.on(Events.InteractionCreate, async (interaction) => {
   if (!interaction.isChatInputCommand()) return;
 
   try {
-    console.log('DISCORD %d:', messagesMap.size)
-
-    messagesMap.forEach((message) => {
-      console.log('MESSAGES: ', message)
-    })
-
     await command.execute(interaction)
   } catch (error) {
     console.error(error)
