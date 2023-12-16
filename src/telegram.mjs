@@ -47,6 +47,9 @@ export async function getImage(fileId) {
   }
 }
 
+
+// ANCHOR - If bot need to send images
+
 /**
 
  * @param {*} messageObj 
@@ -58,6 +61,7 @@ function sendMessage(messageObj, messageText) {
     text: messageText
   })
 }
+
 
 export function handleMessage(messageObj) {
   /**

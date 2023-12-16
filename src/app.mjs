@@ -1,19 +1,23 @@
+// LINK: https://youtu.be/COLDiMlmcoI?si=2DQRGIgKHfITKAve
+
 import 'dotenv/config'
 import { GatewayIntentBits, Events, Client, REST, Routes, Message } from 'discord.js'
 import command from './commands/ping.mjs'
-import fs from 'fs'
-//https://youtu.be/COLDiMlmcoI?si=2DQRGIgKHfITKAve
-
 import express from 'express'
 import { getImage } from './telegram.mjs'
+
+export const messagesMap = new Map()
 
 const app = express()
 app.use(express.json())
 
-export const messagesMap = new Map()
-
 const chanelId = '1185317574414716981'
 const interval = 500
+
+const client = new Client({ intents: [
+  GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages,
+  GatewayIntentBits.GuildMessageReactions, GatewayIntentBits.GuildMessageTyping, 
+]})
 
 app.post('*', async function (req, res) {
   console.log('BODY: ', req.body)
@@ -35,7 +39,7 @@ app.post('*', async function (req, res) {
   res.send("none")
 })
 
-app.get('*', async function (req, res) {
+app.get('*', async function (_req, res) {
   res.send("Hello, GET")
 })
 
@@ -46,32 +50,6 @@ app.listen(process.env.PORT || 4040, function (err) {
 
   console.log('Sever listening to port ' + 4040)
 })
-
-const client = new Client({ intents: [
-  GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages,
-  GatewayIntentBits.GuildMessageReactions, GatewayIntentBits.GuildMessageTyping, 
-]})
-
-function updateCommands() {
-  const rest = new REST().setToken(process.env.DISCORD_SECRET);
-
-  (async() => {
-    try {
-      console.log(`Started refreshing ${JSON.stringify(command)} application (/) commands.`);
-
-      // The put method is used to fully refresh all commands in the guild with the current set
-      const data = await rest.put(
-        Routes.applicationCommands(process.env.CLIENT_ID),
-        { body: [command.data.toJSON()] },
-      );
-
-      console.log(`Successfully reloaded ${JSON.stringify(data)} application (/) commands.`);
-    } catch (error) {
-      // And of course, make sure you catch and log any errors!
-      console.error(error);
-    }
-  })()
-}
 
 client.on(Events.ClientReady, (client) => {
   console.log(`Logged as ${client.user.tag}`)
@@ -105,7 +83,6 @@ client.on(Events.ClientReady, (client) => {
 
     console.log(keysToDelete.length)
 
-    // Now, delete the keys after the forEach loop
     keysToDelete.forEach((key) => {
       //fs.unlinkSync(message[key].img)
       console.log('DELETED: ', key)
@@ -117,6 +94,7 @@ client.on(Events.ClientReady, (client) => {
   }, interval)
 })
 
+// ANCHOR - If commands are needed
 client.on(Events.InteractionCreate, async (interaction) => {
   if (!interaction.isChatInputCommand()) return;
 
