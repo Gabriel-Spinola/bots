@@ -1,7 +1,9 @@
 import axios from "axios"
 import 'dotenv/config'
 
-const BASE_URL = `https://api.telegram.org/bot${process.env.TELEGRAM_SECRET}/setWebhook?url=${process.env.NGROK_URL}`
+export const BASE_URL = `https://api.telegram.org/bot${process.env.TELEGRAM_SECRET}/`
+export const FILE_BASE_URL = `https://api.telegram.org/bot${process.env.TELEGRAM_SECRET}/`
+export const WEBHOOK_URL = `${BASE_URL}setWebhook?url=${process.env.NGROK_URL}`
 
 export default function getAxiosInstance() {
   return {
@@ -11,7 +13,7 @@ export default function getAxiosInstance() {
      */
     get(method, params) {
       return axios.get(`/${method}`, {
-        baseURL: BASE_URL,
+        baseURL: WEBHOOK_URL,
         params,
       })
     },

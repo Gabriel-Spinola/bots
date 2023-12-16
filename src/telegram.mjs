@@ -1,6 +1,34 @@
 import axios from "axios";
-import getAxiosInstance from "./axios.mjs";
+import getAxiosInstance, { BASE_URL } from "./axios.mjs";
 
+async function getImageFile(filePath) {
+  try {
+    const res = await axios.get(`${BASE_URL}${filePath}`)
+  } catch(error) {
+    console.error(error);
+
+    return null
+  }
+}
+
+/**
+ * 
+ * @param {string} fileId 
+ */
+export async function getImage(fileId) {
+  try {
+    const res = await axios.get(`${BASE_URL}getFile?file_id=${fileId}`)
+    
+    if (!res.data.ok) {
+      throw new Error('respons\'s not okay')
+    } 
+
+    
+  } catch (error) {
+    console.error(error);
+    return null
+  }
+}
 
 /**
 

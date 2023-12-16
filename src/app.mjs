@@ -1,9 +1,10 @@
 import 'dotenv/config'
 import { GatewayIntentBits, Events, Client, REST, Routes, Collection, MessageCollector } from 'discord.js'
 import command from './commands/ping.mjs'
-import { handleMessage } from './telegram.mjs'
+//https://youtu.be/COLDiMlmcoI?si=2DQRGIgKHfITKAve
 
 import express from 'express'
+import { getImage } from './telegram.mjs'
 
 const app = express()
 app.use(express.json())
@@ -16,7 +17,12 @@ app.post('*', async function (req, res) {
   if (req.body) {
     const message = req.body.message
 
-    console.log('MESSAGE ID: ', message.message_id)
+    if (message.photo) {
+      const data = await getImage(message.photo[2].file_id)
+
+      console.log('IMAGE DATA:', data)
+    }
+
     messagesMap.set(message.message_id, message)
   }
 
@@ -73,6 +79,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 
   try {
     console.log('DISCORD %d:', messagesMap.size)
+
     messagesMap.forEach((message) => {
       console.log('MESSAGES: ', message)
     })
