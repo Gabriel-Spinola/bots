@@ -12,3 +12,6 @@ Bot I'm working on for a freelance
 `ngrok http 4040`
 `npm run start`
 `source ./update-webhook.sh`
+
+## License
+[Custom License](https://github.com/Gabriel-Spinola/bots/blob/main/License)
