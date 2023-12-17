@@ -7,3 +7,8 @@ photos/*
 *.png
 *.gif
 *.mp4
+other/bin/
+other/include/
+other/lib64/
+other/lib/
+pyvenv.cfg
