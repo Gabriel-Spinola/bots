@@ -2,6 +2,7 @@
 
 // LINK - filtering: https://github.com/yagop/node-telegram-bot-api/issues/489
 
+import fs from 'fs'
 import 'dotenv/config'
 import { GatewayIntentBits, Events, Client } from 'discord.js'
 import command from './commands/ping.mjs'
@@ -57,6 +58,7 @@ app.listen(process.env.PORT || 3000, function (err) {
 
 client.on(Events.ClientReady, (client) => {
   console.log(`Logged as ${client.user.tag}`)
+  let isImageSent = false
 
   setInterval(() => {
     const channel = client.channels.cache.get(chanelId);
@@ -79,6 +81,8 @@ client.on(Events.ClientReady, (client) => {
         (async() => {
           await channel.send({ files: [{ attachment: message.img, name: 'name.jpg' }] })
           channel.send(message.message.caption || '')
+          
+          fs.unlinkSync(message.img)
         })()
       }
 
@@ -91,7 +95,8 @@ client.on(Events.ClientReady, (client) => {
       //fs.unlinkSync(message[key].img)
       console.log('DELETED: ', key)
 
-      messagesMap.delete(key);
+
+      messagesMap.delete(key)
     })
 
     console.log(messagesMap.size)

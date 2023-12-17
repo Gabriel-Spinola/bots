@@ -2,9 +2,7 @@ import 'dotenv/config'
 import axios from 'axios';
 
 const botToken = process.env.TELEGRAM_SECRET;
-const chatId = '1991964767';
-
-console.log(botToken)
+const chatId = '-1001991964767';
 
 async function addBotToChat() {
   try {

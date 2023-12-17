@@ -1,1 +1,1 @@
-poke net send -f /home/pingola/Desktop/bots/poke/telegram.json
+poke net send -f /home/pingola/Desktop/bots/poke/production.json
