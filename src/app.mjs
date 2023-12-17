@@ -1,5 +1,7 @@
 // LINK: https://youtu.be/COLDiMlmcoI?si=2DQRGIgKHfITKAve
 
+// LINK - filtering: https://github.com/yagop/node-telegram-bot-api/issues/489
+
 import 'dotenv/config'
 import { GatewayIntentBits, Events, Client } from 'discord.js'
 import command from './commands/ping.mjs'
@@ -21,18 +23,20 @@ const client = new Client({ intents: [
 
 app.post('*', async function (req, res) {
   console.log('BODY: ', req.body)
+  
+  try {
+    if (req.body) {
+      const message = req.body.channel_post
+      
+      if (message.photo) {
+        const data = await getImage(message.photo[2].file_id)
+        console.log('IMAGE DATA:', data)
 
-  if (req.body) {
-    const message = req.body.message
-    
-    if (message.photo) {
-      const data = await getImage(message.photo[2].file_id)
-      console.log('IMAGE DATA:', data)
-
-      messagesMap.set(message.message_id, { message, img: data })
-    } else {
-      messagesMap.set(message.message_id, { message })
+        messagesMap.set(message.message_id, { message, img: data })
+      }
     }
+  } catch(error) {
+    console.error('Failed to receive message')
   }
 
   console.log('MAP SIZE:', messagesMap.size)
