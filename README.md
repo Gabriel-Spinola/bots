@@ -5,8 +5,8 @@ Bot for sending messages from a telegram chat to a discord chat
 - [X] Read messages from telegram
 - [X] Send data to discord
 - [X] Establish connection between discord and telegram
-- [ ] Images clenup
-- [ ] Make sure that the bot when reloaded is not going to resend all messages
+- [X] Images clenup
+- [X] Make sure that the bot when reloaded is not going to resend all messages
 
 ## Commands
 `ngrok http 3000`
