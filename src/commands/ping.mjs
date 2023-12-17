@@ -1,5 +1,4 @@
 import { SlashCommandBuilder } from "discord.js";
-import { messagesMap } from "../app.mjs";
 
 export default {
 	data: new SlashCommandBuilder()

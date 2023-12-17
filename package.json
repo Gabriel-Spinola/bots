@@ -1,8 +1,8 @@
 {
-  "name": "telegram",
+  "name": "vitto-bot",
   "version": "1.0.0",
-  "description": "bot",
-  "main": "app.ts",
+  "description": "bot for sending ads from telegram to discord.",
+  "main": "app.mjs",
   "scripts": {
     "start": "nodemon src/app.mjs",
     "build": "npm install",
@@ -24,17 +24,9 @@
     "discord.js": "^14.14.1",
     "dotenv": "^16.3.1",
     "express": "^4.18.2",
-    "nodemon": "^3.0.2",
-    "pre-commit": "^1.2.2",
-    "rimraf": "^5.0.5"
+    "nodemon": "^3.0.2"
   },
-  "pre-commit": [
-    "ts.check",
-    "build",
-    "add-build"
-  ],
   "devDependencies": {
-    "@flydotio/dockerfile": "^0.4.11",
-    "supabase": "^1.123.4"
+    "@flydotio/dockerfile": "^0.4.11"
   }
 }
