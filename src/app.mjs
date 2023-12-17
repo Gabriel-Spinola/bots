@@ -14,7 +14,7 @@ export const messagesMap = new Map()
 const app = express()
 app.use(express.json())
 
-const chanelId = '1185317574414716981'
+const chanelId = '1186041173530398841'
 const interval = 500
 
 const client = new Client({ intents: [
