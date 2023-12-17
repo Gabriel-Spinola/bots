@@ -1,5 +1,5 @@
-# bots
-Bot I'm working on for a freelance
+# Wellington Bot
+Bot for sending messages from a telegram chat to a discord chat
 
 ## TODO
 - [X] Read messages from telegram
@@ -12,3 +12,6 @@ Bot I'm working on for a freelance
 `ngrok http 4040`
 `npm run start`
 `source ./update-webhook.sh`
+
+## License
+[Custom License](https://github.com/Gabriel-Spinola/bots/blob/main/License)
