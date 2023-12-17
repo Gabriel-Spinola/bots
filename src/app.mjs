@@ -1,7 +1,7 @@
 // LINK: https://youtu.be/COLDiMlmcoI?si=2DQRGIgKHfITKAve
 
 import 'dotenv/config'
-import { GatewayIntentBits, Events, Client, REST, Routes, Message } from 'discord.js'
+import { GatewayIntentBits, Events, Client } from 'discord.js'
 import command from './commands/ping.mjs'
 import express from 'express'
 import { getImage } from './telegram.mjs'
@@ -43,12 +43,12 @@ app.get('*', async function (_req, res) {
   res.send("Hello, GET")
 })
 
-app.listen(process.env.PORT || 4040, function (err) {
+app.listen(process.env.PORT || 3000, function (err) {
   if (err) {
     console.log(err)
   }
 
-  console.log('Sever listening to port ' + 4040)
+  console.log('Sever listening to port ' + 3000)
 })
 
 client.on(Events.ClientReady, (client) => {

@@ -5,9 +5,7 @@
   "main": "app.ts",
   "scripts": {
     "start": "nodemon src/app.mjs",
-    "build": "rimraf dist && tsc",
-    "ts.check": "tsc --project tsconfig.json",
-    "add-build": "git add dist",
+    "build": "npm install",
     "test": "test"
   },
   "repository": {
@@ -36,6 +34,7 @@
     "add-build"
   ],
   "devDependencies": {
+    "@flydotio/dockerfile": "^0.4.11",
     "supabase": "^1.123.4"
   }
 }
