@@ -21,11 +21,13 @@
   "dependencies": {
     "@ngrok/ngrok": "^0.9.1",
     "axios": "^1.6.2",
+    "cheerio": "^1.0.0-rc.12",
     "discord.js": "^14.14.1",
     "dotenv": "^16.3.1",
     "express": "^4.18.2",
     "node-fetch": "^3.3.2",
-    "nodemon": "^3.0.2"
+    "nodemon": "^3.0.2",
+    "puppeteer": "^21.3.7"
   },
   "devDependencies": {
     "@flydotio/dockerfile": "^0.4.11"

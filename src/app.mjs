@@ -1,32 +1,30 @@
-// LINK: https://youtu.be/COLDiMlmcoI?si=2DQRGIgKHfITKAve
-
-// LINK - filtering: https://github.com/yagop/node-telegram-bot-api/issues/489
-
 import fs from 'fs'
 import 'dotenv/config'
 import { GatewayIntentBits, Events, Client } from 'discord.js'
 import command from './commands/ping.mjs'
 import express from 'express'
 import { getImage } from './telegram.mjs'
+import { promoChannelId, promoCheckageInterval } from './config.mjs'
 
-export const messagesMap = new Map()
+const messagesMap = new Map()
 
 const app = express()
 app.use(express.json())
 
-const chanelId = '1186041173530398841'
-const interval = 500
-
-const client = new Client({ intents: [
+const adsClient = new Client({ intents: [
   GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages,
   GatewayIntentBits.GuildMessageReactions, GatewayIntentBits.GuildMessageTyping, 
 ]})
 
+/**
+ * @typedef { { photo: { file_id: string }[], message_id: string } } ChannelPost
+ */
 app.post('*', async function (req, res) {
-  console.log('BODY: ', req.body)
+  console.log('RECEIVED: ', req.body)
   
   try {
     if (req.body) {
+      /**  @type {ChannelPost} */
       const message = req.body.channel_post
       
       if (message.photo) {
@@ -38,33 +36,35 @@ app.post('*', async function (req, res) {
     }
   } catch(error) {
     console.error('Failed to receive message')
+
+    res.status(500).send("Something went wrong when trying to process a message.")
   }
 
   console.log('MAP SIZE:', messagesMap.size)
-  res.send("none")
+  res.send("POST")
 })
 
 app.get('*', async function (_req, res) {
-  res.send("Hello, GET")
+  res.send("Hello, GET!")
 })
 
 app.listen(process.env.PORT || 3000, function (err) {
   if (err) {
-    console.log(err)
+    console.error(err)
   }
 
   console.log('Sever listening to port ' + 3000)
 })
 
-client.on(Events.ClientReady, (client) => {
+adsClient.on(Events.ClientReady, (client) => {
   console.log(`Logged as ${client.user.tag}`)
-  let isImageSent = false
 
   setInterval(() => {
-    const channel = client.channels.cache.get(chanelId);
+    const channel = client.channels.cache.get(promoChannelId);
 
     if (!channel) {
-      console.error(`Channel with ID ${chanelId} not found.`)
+      console.error(`Channel with ID ${promoChannelId} not found.`)
+
       return
     }
 
@@ -89,22 +89,18 @@ client.on(Events.ClientReady, (client) => {
       keysToDelete.push(key)
     })
 
-    console.log(keysToDelete.length)
-
     keysToDelete.forEach((key) => {
-      //fs.unlinkSync(message[key].img)
       console.log('DELETED: ', key)
-
 
       messagesMap.delete(key)
     })
 
-    console.log(messagesMap.size)
-  }, interval)
+    console.log('IMAGES TO PROCESS: ', messagesMap.size)
+  }, promoCheckageInterval)
 })
 
 // ANCHOR - If commands are needed
-client.on(Events.InteractionCreate, async (interaction) => {
+adsClient.on(Events.InteractionCreate, async (interaction) => {
   if (!interaction.isChatInputCommand()) return;
 
   try {
@@ -120,4 +116,4 @@ client.on(Events.InteractionCreate, async (interaction) => {
   }
 })
 
-client.login(process.env.DISCORD_SECRET)
+adsClient.login(process.env.DISCORD_SECRET)

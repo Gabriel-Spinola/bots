@@ -1,7 +1,30 @@
 import axios from "axios";
-import getAxiosInstance, { BASE_URL, FILE_BASE_URL } from "./axios.mjs";
+import { BASE_URL, FILE_BASE_URL } from "./config.mjs";
 import fs from 'fs'
 import path from "path";
+
+/**
+ * @param {string} fileId 
+ */
+export async function getImage(fileId) {
+  try {
+    const res = await axios.get(`${BASE_URL}getFile?file_id=${fileId}`)
+    
+    if (!res.data.ok) {
+      throw new Error('respons\'s not okay. AT GET getfile')
+    } 
+
+    console.log('IMAGE LINK RECEIVED')
+    console.log(res.data.result)
+    const imageData = await getImageFile(res.data.result.file_path)
+    
+    return imageData
+  } catch (error) {
+    console.error(error);
+
+    return null
+  }
+}
 
 /**
  * @param {string} filePath 
@@ -24,42 +47,14 @@ async function getImageFile(filePath) {
   }
 }
 
-/**
- * 
- * @param {string} fileId 
- */
-export async function getImage(fileId) {
-  try {
-    const res = await axios.get(`${BASE_URL}getFile?file_id=${fileId}`)
-    
-    if (!res.data.ok) {
-      throw new Error('respons\'s not okay. AT GET getfile')
-    } 
-
-    console.log(res.data.result)
-    const imageData = await getImageFile(res.data.result.file_path)
-    
-    return imageData
-  } catch (error) {
-    console.error(error);
-
-    return null
-  }
-}
-
-
-// ANCHOR - If bot need to send images
-
+// ANCHOR - If bot needs to send images
 /**
 
  * @param {*} messageObj 
  * @param {string} messageText 
  */
 function sendMessage(messageObj, messageText) {
-  return getAxiosInstance().get('sendMessage', {
-    chatd_id: messageObj.chat.id,
-    text: messageText
-  })
+  // TODO
 }
 
 
