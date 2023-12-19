@@ -11,6 +11,6 @@ import { getImage } from '../src/telegram.mjs'
  * @param {VercelRequest} request 
  * @param {VercelResponse} response 
  */
-export default async function handler(request, response) {
+export default async function handler(request: VercelRequest, response: VercelResponse) {
   return response.status(200).json({data: "Hi"})
 }
