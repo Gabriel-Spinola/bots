@@ -14,7 +14,7 @@ export const messagesMap = new Map()
 const app = express()
 app.use(express.json())
 
-const chanelId = '1186711941465505862'
+const chanelId = '1186041173530398841'
 const interval = 1000
 
 const client = new Client({ intents: [
@@ -58,6 +58,7 @@ app.listen(process.env.PORT || 3000, function (err) {
 
 client.on(Events.ClientReady, (client) => {
   console.log(`Logged as ${client.user.tag}`)
+  let isImageSent = false
 
   setInterval(() => {
     const channel = client.channels.cache.get(chanelId);
@@ -119,4 +120,4 @@ client.on(Events.InteractionCreate, async (interaction) => {
   }
 })
 
-client.login(process.env.HLTV_BOT_SECRET)
+client.login(process.env.DISCORD_SECRET)
