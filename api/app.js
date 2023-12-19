@@ -5,9 +5,8 @@
 import fs from 'fs'
 import 'dotenv/config'
 import { GatewayIntentBits, Events, Client } from 'discord.js'
-import command from './commands/ping.mjs'
 import express from 'express'
-import { getImage } from './telegram.mjs'
+import { getImage } from '../src/telegram.mjs'
 
 export const messagesMap = new Map()
 

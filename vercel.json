@@ -3,7 +3,7 @@
   "name": "telegram",
   "builds": [
     {
-      "src": "./src/app.mjs",
+      "src": "/api/app.js",
       "use": "@vercel/node"
     }
   ],
