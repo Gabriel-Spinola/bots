@@ -44,8 +44,8 @@ app.post('*', async function (req, res) {
   res.send("none")
 })
 
-app.get('*', async function (_req, res) {
-  res.send("Hello, GET")
+app.get('/', async function (_req, res) {
+  return res.send("Hello, GET")
 })
 
 app.listen(process.env.PORT || 3000, function (err) {
