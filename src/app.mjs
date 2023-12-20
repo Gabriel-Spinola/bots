@@ -14,6 +14,7 @@ app.use(express.json())
 const adsClient = new Client({ intents: [
   GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages,
   GatewayIntentBits.GuildMessageReactions, GatewayIntentBits.GuildMessageTyping, 
+  GatewayIntentBits.GuildWebhooks
 ]})
 
 /**

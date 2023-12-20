@@ -15,6 +15,9 @@ hltvClient.on(Events.ClientReady, async function (client) {
   console.log(`Logged as ${client.user.id}`)
   const channel = client.channels.cache.get(newsChannelId);
 
+  const webhooks = await channel.fetchWebhooks()
+  const webhook = webhooks.first();
+
   if (!channel) {
     console.error(`Channel with ID ${newsChannelId} not found.`)
 
@@ -25,6 +28,7 @@ hltvClient.on(Events.ClientReady, async function (client) {
     headless: false,
     defaultViewport: null,
   })
+
   let page = await browser.newPage()
 
   console.log('PUPPETEER BROWSER INSTANTIATED')
@@ -37,7 +41,8 @@ hltvClient.on(Events.ClientReady, async function (client) {
     const newsLinesInfo = newsLines.map(newsLine => {
       return { 
         title: newsLine.querySelector('.newstext').textContent,
-        link: newsLine.getAttribute('href') 
+        link: newsLine.getAttribute('href'),
+        content: '',
       } 
     })
 
@@ -59,6 +64,7 @@ hltvClient.on(Events.ClientReady, async function (client) {
       headless: false,
       defaultViewport: null,
     })
+
     page = await browser.newPage()
 
     console.log('GOTO PAGE: ', news.link)
@@ -76,11 +82,15 @@ hltvClient.on(Events.ClientReady, async function (client) {
       )
     }, contentSelector)
 
-    console.log(content)
-    const thread = await postNewsThread(news, channel)
-    console.log('CREATED THREAD: ', thread)
+    console.log(content.join('\n\n'))
+    news.content = content.join('\n\n')
+    const thread = await postNewsThread(news, channel, webhook)
+    if (!thread) {
+      break
+    }
 
     console.log('GOING BACK TO HOME PAGE')
+
     await page.goBack()
   }
 
@@ -92,15 +102,34 @@ hltvClient.login(process.env.HLTV_BOT_SECRET)
 /** 
  * @param { import('./hltvActions').HLTVNews } news 
  * @param { Channel } channel
+ * @param {*} webhook
  */
-export async function postNewsThread(news, channel) {
-  const message = await channel.send(news.title)
+export async function postNewsThread(news, channel, webhook) {
+  try {
+    const message = await channel.send(news.title)
 
-  const thread = await message.startThread({
-    name: news.title,
-    autoArchiveDuration: ThreadAutoArchiveDuration.OneHour,
-    reason: 'news',
-  })
+    // TODO - treat images
+    //await channel.send({ files: [{attachment: 'https://img-cdn.hltv.org/gallerypicture/Kj061TW8kIEkXt_qnKPPMQ.jpg', name: 'heading-img'}] })
 
-  return thread.name
+    const thread = await message.startThread({
+      name: news.title,
+      autoArchiveDuration: ThreadAutoArchiveDuration.OneHour,
+      reason: 'news',
+    })
+
+    await webhook.send({
+      content: news.content,
+      threadId: thread.id,
+    })
+    
+    console.log('threadid:', thread.id)
+    console.log('CREATED THREAD: ', thread.name)
+
+    return thread.name
+  } catch (error) {
+    console.error('FAILED TO CREATE THREAD: ', news.title)
+    console.error(error)
+
+    return null
+  }
 }
