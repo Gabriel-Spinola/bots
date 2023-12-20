@@ -84,7 +84,9 @@ client.on(Events.ClientReady, (client) => {
           await channel.send({ files: [{ attachment: message.img, name: 'name.jpg' }] })
           channel.send(message.message.caption || '')
           
-          fs.unlinkSync(message.img)
+          if (fs.existsSync(message.img)) {
+            fs.unlinkSync(message.img)
+          }
         })()
       }
 
