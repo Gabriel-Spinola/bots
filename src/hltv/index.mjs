@@ -9,11 +9,8 @@ const hltvClient = new Client({ intents: [
   GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages,
   GatewayIntentBits.GuildMessageReactions, GatewayIntentBits.GuildMessageTyping, 
 ]})
+
 // NOTE - business logic -> Only search for the day news. Then wait for full 24 hours and repeat
-
-//const news = await HLTV.getNews()
-//  console.log(news)
-
 hltvClient.on(Events.ClientReady, async function (client) {
   console.log(`Logged as ${client.user.id}`)
   const channel = client.channels.cache.get(newsChannelId);
@@ -24,12 +21,13 @@ hltvClient.on(Events.ClientReady, async function (client) {
     return
   }
 
-  const browser = await puppeteer.launch({
+  let browser = await puppeteer.launch({
     headless: false,
     defaultViewport: null,
   })
+  let page = await browser.newPage()
 
-  const page = await browser.newPage()
+  console.log('PUPPETEER BROWSER INSTANTIATED')
 
   await page.goto(BASE_URL, { waitUntil: 'domcontentloaded' })
 
@@ -48,23 +46,44 @@ hltvClient.on(Events.ClientReady, async function (client) {
 
   console.log('NEWS COLLECTED:', todayNews)
 
-  try {
-    for (const news of todayNews) {
-      if (!news.link || !news.title) {
-        continue
-      }
-  
-      await page.goto(`${BASE_URL}${news.link}`);
-      
-      const thread = await postNewsThread(news, channel)
-      console.log('CREATED THREAD: ', thread)
+  for (const news of todayNews) {
+    if (!news.link || !news.title) {
+      console.error('Something went wrong with some of the news so it\'ll be skipped')
 
-      await page.goBack()
+      continue
     }
-  } catch (error) {
-    console.error(error);
+
+    // NOTE - Restantiate browser for every page
+    await browser.close()
+    browser = await puppeteer.launch({
+      headless: false,
+      defaultViewport: null,
+    })
+    page = await browser.newPage()
+
+    console.log('GOTO PAGE: ', news.link)
+    await page.goto(`${BASE_URL}${news.link}`);
+
+    const contentSelector = '.newstext-con'
+    const content = await page.evaluate((selector) => {
+      const contentBlocks = Array.from(document.querySelectorAll(selector))
+
+      return contentBlocks.map(
+        (content) => 
+          content.textContent
+            .replace(/\s+/g, ' ')
+            .trim()
+      )
+    }, contentSelector)
+
+    console.log(content)
+    const thread = await postNewsThread(news, channel)
+    console.log('CREATED THREAD: ', thread)
+
+    console.log('GOING BACK TO HOME PAGE')
+    await page.goBack()
   }
-  
+
   await browser.close()
 })
 
@@ -75,8 +94,9 @@ hltvClient.login(process.env.HLTV_BOT_SECRET)
  * @param { Channel } channel
  */
 export async function postNewsThread(news, channel) {
-  console.log(news.title)
-  const thread = await channel.threads.create({
+  const message = await channel.send(news.title)
+
+  const thread = await message.startThread({
     name: news.title,
     autoArchiveDuration: ThreadAutoArchiveDuration.OneHour,
     reason: 'news',
