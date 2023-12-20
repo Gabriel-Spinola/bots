@@ -2,6 +2,8 @@
 
 // LINK - filtering: https://github.com/yagop/node-telegram-bot-api/issues/489
 
+// a
+
 import fs from 'fs'
 import 'dotenv/config'
 import { GatewayIntentBits, Events, Client } from 'discord.js'
