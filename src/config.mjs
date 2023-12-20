@@ -6,3 +6,5 @@ export const WEBHOOK_URL = `${BASE_URL}setWebhook?url=${process.env.NGROK_URL}`
 
 export const promoChannelId = '1186041173530398841'
 export const promoCheckageInterval = 5000
+
+export const newsChannelId = '1186711941465505862'
