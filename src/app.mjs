@@ -7,7 +7,6 @@ import { GatewayIntentBits, Events, Client, Message } from 'discord.js'
 import command from './commands/ping.mjs'
 import express from 'express'
 import { getImage } from './telegram.mjs'
-import cron from 'node-cron'
 
 const newMessagesMap = new Map()
 
@@ -95,6 +94,15 @@ client.on(Events.ClientReady, (client) => {
     return
   }
 
+  // NOTE - Cron job (task) for deleting sent messages once every week
+  const clearMessagesJob = () => {
+    sentMessagesMap.clear();
+    setTimeout(clearMessagesJob, 7 * 24 * 60 * 60 * 1000); // Run every week (7 days)
+  };
+  
+  // Initial call to start the job
+  clearMessagesJob();
+
   setInterval(async () => {
     if (newMessagesMap.size <= 0) {
       return
@@ -152,8 +160,7 @@ client.on(Events.ClientReady, (client) => {
     }    
   }, interval)
 
-  // NOTE - Cron job (task) for deleting sent messages once every week
-  cron.schedule('0 1 * * 0', () => sentMessagesMap.clear(), { timezone: 'America/Sao_Paulo' })
+
 })
 
 // ANCHOR - If commands are needed
