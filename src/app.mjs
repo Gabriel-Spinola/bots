@@ -18,7 +18,7 @@ app.use(express.json())
 // NOTE - not promo
 // const chanelId = '1186041173530398841'
 const chanelId = '1186041173530398841'
-const interval = 1000
+const interval = 1000*30
 
 const client = new Client({ intents: [
   GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages,
@@ -94,7 +94,8 @@ client.on(Events.ClientReady, (client) => {
     
           console.log('REMOVED IMAGE FROM MEMORY')
         }
-    
+
+        messagesMap.delete(key)
         //sentMessagesMap.set(sentMessage.id, formatedMessage)
       } catch(error) {
         console.error('FAILED WHEN TRYING TO SEND THE MESSAGE')
