@@ -29,6 +29,7 @@
     "nodemon": "^3.0.2"
   },
   "devDependencies": {
-    "@flydotio/dockerfile": "^0.4.11"
+    "@flydotio/dockerfile": "^0.4.11",
+    "node-cron": "^3.0.3"
   }
 }

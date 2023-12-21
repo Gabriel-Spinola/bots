@@ -1,15 +1,26 @@
 // LINK: https://youtu.be/COLDiMlmcoI?si=2DQRGIgKHfITKAve
 
-// LINK - filtering: https://github.com/yagop/node-telegram-bot-api/issues/489
+// LINK - TELEGRAM BOT PACKAGE: https://www.npmjs.com/package/node-telegram-bot-api
 import fs from 'fs'
 import 'dotenv/config'
-import { GatewayIntentBits, Events, Client } from 'discord.js'
+import { GatewayIntentBits, Events, Client, Message } from 'discord.js'
 import command from './commands/ping.mjs'
 import express from 'express'
 import { getImage } from './telegram.mjs'
+import cron from 'node-cron'
 
-const messagesMap = new Map()
+const newMessagesMap = new Map()
+
+/**
+ * The key correspond to the telegram post id, and the message_id to the discord message id 
+ * @type { Map<string, Message> } 
+ */
 const sentMessagesMap = new Map()
+
+/**
+ * @type { Array<string> }
+ */
+const toEditMessages = []
 
 const app = express()
 app.use(express.json())
@@ -17,8 +28,9 @@ app.use(express.json())
 // 1 week
 // NOTE - not promo
 // const chanelId = '1186041173530398841'
-const chanelId = '1186041173530398841'
-const interval = 1000
+const chanelId = '1186711941465505862'
+const interval = 1000*2
+const replyInterval = 1000
 
 const client = new Client({ intents: [
   GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages,
@@ -26,7 +38,6 @@ const client = new Client({ intents: [
 ]})
 
 app.post('*', async function (req, res) {
-  console.log(req.originalUrl)
   console.log('BODY: ', req.body)
   
   try {
@@ -37,18 +48,29 @@ app.post('*', async function (req, res) {
         const data = await getImage(message.photo[message.photo.length - 1].file_id)
         console.log('IMAGE DATA:', data)
 
-        messagesMap.set(message.message_id, { message, img: data })
+        newMessagesMap.set(message.message_id, { message, img: data })
       }
     }
     else if (req.body.edited_channel_post) {
-      console.log("we're editing")
+      const message = req.body.edited_channel_post
+
+      for (const [key, sentMessage] of sentMessagesMap.entries()) {
+        console.log(key)
+
+        if (key === message.message_id) {
+          toEditMessages.push(message.message_id)
+
+          sentMessage.content = (message.caption || '') + '\n\n** **'
+          console.log('edited message: ', sentMessage.content)
+        }
+      }
     }
   } catch(error) {
     console.error('FAILED TO RECEIVE MESSAGE:')
     console.error(error)
   }
 
-  console.log('MAP SIZE:', messagesMap.size)
+  console.log('MAP SIZE:', newMessagesMap.size)
   res.send("none")
 })
 
@@ -67,7 +89,7 @@ app.listen(process.env.PORT || 3000, function (err) {
 client.on(Events.ClientReady, (client) => {
   console.log(`Logged as ${client.user.tag}`)
 
-  const channel = client.channels.cache.get(chanelId);
+  const channel = client.channels.cache.get(chanelId)
 
   if (!channel) {
     console.error(`Channel with ID ${chanelId} not found.`)
@@ -76,36 +98,64 @@ client.on(Events.ClientReady, (client) => {
   }
 
   setInterval(async () => {
-    if (messagesMap.size <= 0) {
+    if (newMessagesMap.size <= 0) {
       return
     }
 
-    for (const [key, message] of messagesMap.entries()) {
+    for (const [key, message] of newMessagesMap.entries()) {
       console.log('KEY: ', key)
 
       try {
         const formatedMessage = (message.message.caption || '') + '\n\n** **'
-    
+
+        console.log('STRINGFY: ', JSON.stringify(message.message.message_id))
+
         await channel.send({ files: [{ attachment: message.img, name: 'attachment.jpg' }] })
+
+        /**
+         * @type {Message}
+         */
         const sentMessage = await channel.send(formatedMessage)
-    
+
         if (fs.existsSync(message.img)) {
           fs.unlinkSync(message.img)
     
           console.log('REMOVED IMAGE FROM MEMORY')
         }
-    
-        //sentMessagesMap.set(sentMessage.id, formatedMessage)
+
+        newMessagesMap.delete(key) 
+        sentMessagesMap.set(key, sentMessage)
       } catch(error) {
         console.error('FAILED WHEN TRYING TO SEND THE MESSAGE')
         console.error(error)
       }
     }
 
-    messagesMap.clear()
+    newMessagesMap.clear()
 
-    console.log('MESSAGES TO DELET: ', messagesMap.size)
+    console.log('MESSAGES TO DELET: ', newMessagesMap.size)
   }, interval)
+
+  // NOTE - Message Editing
+  setInterval(() => {
+    if (toEditMessages.length <= 0) {
+      return
+    }
+
+    for (const [index, message] of toEditMessages.entries()) {
+      // TODO - Handle editing
+
+      if (sentMessagesMap.has(message)) {
+        const newMessage = sentMessagesMap.get(message)
+
+        newMessage.edit(newMessage.content)
+        toEditMessages.splice(index)
+      }
+    }    
+  }, interval)
+
+  // NOTE - Cron job (task) for deleting sent messages once every week
+  cron.schedule('0 1 * * 0', () => sentMessagesMap.clear(), { timezone: 'America/Sao_Paulo' })
 })
 
 // ANCHOR - If commands are needed
@@ -125,4 +175,4 @@ client.on(Events.InteractionCreate, async (interaction) => {
   }
 })
 
-client.login(process.env.DISCORD_SECRET)
+client.login(process.env.TESTS_DISCORD_SECRET)
