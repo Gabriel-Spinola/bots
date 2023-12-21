@@ -1,9 +1,6 @@
 // LINK: https://youtu.be/COLDiMlmcoI?si=2DQRGIgKHfITKAve
 
 // LINK - filtering: https://github.com/yagop/node-telegram-bot-api/issues/489
-
-// a
-
 import fs from 'fs'
 import 'dotenv/config'
 import { GatewayIntentBits, Events, Client } from 'discord.js'
@@ -11,11 +8,15 @@ import command from './commands/ping.mjs'
 import express from 'express'
 import { getImage } from './telegram.mjs'
 
-export const messagesMap = new Map()
+const messagesMap = new Map()
+const sentMessagesMap = new Map()
 
 const app = express()
 app.use(express.json())
 
+// 1 week
+// NOTE - not promo
+// const chanelId = '1186041173530398841'
 const chanelId = '1186041173530398841'
 const interval = 1000
 
@@ -25,21 +26,26 @@ const client = new Client({ intents: [
 ]})
 
 app.post('*', async function (req, res) {
+  console.log(req.originalUrl)
   console.log('BODY: ', req.body)
   
   try {
-    if (req.body) {
+    if (req.body.channel_post) {
       const message = req.body.channel_post
       
       if (message.photo) {
-        const data = await getImage(message.photo[2].file_id)
+        const data = await getImage(message.photo[message.photo.length - 1].file_id)
         console.log('IMAGE DATA:', data)
 
         messagesMap.set(message.message_id, { message, img: data })
       }
     }
+    else if (req.body.edited_channel_post) {
+      console.log("we're editing")
+    }
   } catch(error) {
-    console.error('Failed to receive message')
+    console.error('FAILED TO RECEIVE MESSAGE:')
+    console.error(error)
   }
 
   console.log('MAP SIZE:', messagesMap.size)
@@ -60,50 +66,45 @@ app.listen(process.env.PORT || 3000, function (err) {
 
 client.on(Events.ClientReady, (client) => {
   console.log(`Logged as ${client.user.tag}`)
-  let isImageSent = false
 
-  setInterval(() => {
-    const channel = client.channels.cache.get(chanelId);
+  const channel = client.channels.cache.get(chanelId);
 
-    if (!channel) {
-      console.error(`Channel with ID ${chanelId} not found.`)
-      return
-    }
+  if (!channel) {
+    console.error(`Channel with ID ${chanelId} not found.`)
+    
+    return
+  }
 
+  setInterval(async () => {
     if (messagesMap.size <= 0) {
       return
     }
 
-    const keysToDelete = []
-
-    messagesMap.forEach((message, key) => {
+    for (const [key, message] of messagesMap.entries()) {
       console.log('KEY: ', key)
 
-      if (message.img) {
-        (async() => {
-          await channel.send({ files: [{ attachment: message.img, name: 'name.jpg' }] })
-          channel.send(message.message.caption || '')
-          
-          if (fs.existsSync(message.img)) {
-            fs.unlinkSync(message.img)
-          }
-        })()
+      try {
+        const formatedMessage = (message.message.caption || '') + '\n\n** **'
+    
+        await channel.send({ files: [{ attachment: message.img, name: 'attachment.jpg' }] })
+        const sentMessage = await channel.send(formatedMessage)
+    
+        if (fs.existsSync(message.img)) {
+          fs.unlinkSync(message.img)
+    
+          console.log('REMOVED IMAGE FROM MEMORY')
+        }
+    
+        //sentMessagesMap.set(sentMessage.id, formatedMessage)
+      } catch(error) {
+        console.error('FAILED WHEN TRYING TO SEND THE MESSAGE')
+        console.error(error)
       }
+    }
 
-      keysToDelete.push(key)
-    })
+    messagesMap.clear()
 
-    console.log(keysToDelete.length)
-
-    keysToDelete.forEach((key) => {
-      //fs.unlinkSync(message[key].img)
-      console.log('DELETED: ', key)
-
-
-      messagesMap.delete(key)
-    })
-
-    console.log(messagesMap.size)
+    console.log('MESSAGES TO DELET: ', messagesMap.size)
   }, interval)
 })
 

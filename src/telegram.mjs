@@ -1,5 +1,5 @@
 import axios from "axios";
-import getAxiosInstance, { BASE_URL, FILE_BASE_URL } from "./axios.mjs";
+import { BASE_URL, FILE_BASE_URL } from "./config.mjs";
 import fs from 'fs'
 import path from "path";
 
@@ -56,10 +56,10 @@ export async function getImage(fileId) {
  * @param {string} messageText 
  */
 function sendMessage(messageObj, messageText) {
-  return getAxiosInstance().get('sendMessage', {
+ /* return getAxiosInstance().get('sendMessage', {
     chatd_id: messageObj.chat.id,
     text: messageText
-  })
+  })*/
 }
 
 
