@@ -25,12 +25,10 @@ const toEditMessages = []
 const app = express()
 app.use(express.json())
 
-// 1 week
-// NOTE - not promo
-// const chanelId = '1186041173530398841'
-const chanelId = '1186711941465505862'
-const interval = 1000*2
-const replyInterval = 1000
+// PRODUCTION ID -> 1186041173530398841
+// DEV ID        -> 1186711941465505862
+const chanelId = '1186041173530398841'
+const interval = 1000*30
 
 const client = new Client({ intents: [
   GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages,
@@ -175,4 +173,4 @@ client.on(Events.InteractionCreate, async (interaction) => {
   }
 })
 
-client.login(process.env.TESTS_DISCORD_SECRET)
+client.login(process.env.DISCORD_SECRET)
