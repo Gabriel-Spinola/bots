@@ -95,13 +95,13 @@ client.on(Events.ClientReady, (client) => {
     return
   }
 
-  // NOTE - Cron job (task) for deleting sent messages once every week
+  // NOTE - task for deleting sent messages cache once every week
   const clearMessagesJob = () => {
     sentMessagesMap.clear();
     setTimeout(clearMessagesJob, 7 * 24 * 60 * 60 * 1000); // Run every week (7 days)
   }
 
-  // NOTE - Cron job (task) for deleting sent messages once every week
+  // NOTE - task for preventing production server pausing from inactivity
   const preventInactivityJob = () => {
     try {
       debugChannel.send("INACTIVITY MESSAGE")
@@ -164,8 +164,6 @@ client.on(Events.ClientReady, (client) => {
     }
 
     for (const [index, message] of toEditMessages.entries()) {
-      // TODO - Handle editing
-
       if (sentMessagesMap.has(message)) {
         const newMessage = sentMessagesMap.get(message)
 
@@ -174,8 +172,6 @@ client.on(Events.ClientReady, (client) => {
       }
     }    
   }, interval)
-
-
 })
 
 // ANCHOR - If commands are needed
