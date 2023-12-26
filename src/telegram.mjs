@@ -55,6 +55,10 @@ async function getImageFile(filePath) {
  */
 function sendMessage(messageObj, messageText) {
   // TODO
+ /* return getAxiosInstance().get('sendMessage', {
+    chatd_id: messageObj.chat.id,
+    text: messageText
+  })*/
 }
 
 

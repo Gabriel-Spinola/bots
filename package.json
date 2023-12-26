@@ -20,6 +20,7 @@
   "homepage": "https://github.com/Gabriel-Spinola/bots#readme",
   "dependencies": {
     "@ngrok/ngrok": "^0.9.1",
+    "@vercel/node": "^3.0.13",
     "axios": "^1.6.2",
     "cheerio": "^1.0.0-rc.12",
     "discord.js": "^14.14.1",
