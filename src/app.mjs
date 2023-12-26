@@ -27,7 +27,7 @@ app.use(express.json())
 // PRODUCTION ID -> 1186041173530398841
 // DEV ID        -> 1186711941465505862
 const chanelId = '1186041173530398841'
-const interval = 1000*30
+const interval = 1000 * 30
 
 const client = new Client({ intents: [
   GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages,
@@ -87,6 +87,7 @@ client.on(Events.ClientReady, (client) => {
   console.log(`Logged as ${client.user.tag}`)
 
   const channel = client.channels.cache.get(chanelId)
+  const debugChannel = client.channels.cache.get('1185354171986235454')
 
   if (!channel) {
     console.error(`Channel with ID ${chanelId} not found.`)
@@ -98,10 +99,24 @@ client.on(Events.ClientReady, (client) => {
   const clearMessagesJob = () => {
     sentMessagesMap.clear();
     setTimeout(clearMessagesJob, 7 * 24 * 60 * 60 * 1000); // Run every week (7 days)
-  };
+  }
+
+  // NOTE - Cron job (task) for deleting sent messages once every week
+  const preventInactivityJob = () => {
+    try {
+      debugChannel.send("INACTIVITY MESSAGE")
+
+    } catch(error) {
+      console.error('FAILED WHEN TRYING TO SEND THE MESSAGE')
+      console.error(error)
+    }
+
+    setTimeout(preventInactivityJob, 20 * 60 * 60 * 1000) // Run every day (20 hours)
+  }
   
-  // Initial call to start the job
-  clearMessagesJob();
+  // Initial call to start jobs
+  clearMessagesJob()
+  preventInactivityJob()
 
   setInterval(async () => {
     if (newMessagesMap.size <= 0) {
