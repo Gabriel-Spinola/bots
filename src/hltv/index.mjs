@@ -13,10 +13,10 @@ const hltvClient = new Client({ intents: [
 // NOTE - business logic -> Only search for the day news. Then wait for full 24 hours and repeat
 hltvClient.on(Events.ClientReady, async function (client) {
   console.log(`Logged as ${client.user.id}`)
-  const channel = client.channels.cache.get(newsChannelId);
+  const channel = client.channels.cache.get(newsChannelId)
 
   const webhooks = await channel.fetchWebhooks()
-  const webhook = webhooks.first();
+  const webhook = webhooks.first()
 
   if (!channel) {
     console.error(`Channel with ID ${newsChannelId} not found.`)
@@ -39,10 +39,16 @@ hltvClient.on(Events.ClientReady, async function (client) {
   const todayNews = await page.evaluate((selector) => {
     const newsLines = Array.from(document.querySelector(selector).children)
     const newsLinesInfo = newsLines.map(newsLine => {
+      const title = newsLine.querySelector('.newstext') 
+
+      if (!title) {
+        return
+      }
+
       return { 
-        title: newsLine.querySelector('.newstext').textContent,
+        title: title.textContent,
         link: newsLine.getAttribute('href'),
-        content: '',
+        content: [],
       } 
     })
 
@@ -52,7 +58,7 @@ hltvClient.on(Events.ClientReady, async function (client) {
   console.log('NEWS COLLECTED:', todayNews)
 
   for (const news of todayNews) {
-    if (!news.link || !news.title) {
+    if (!news) {
       console.error('Something went wrong with some of the news so it\'ll be skipped')
 
       continue
@@ -77,13 +83,14 @@ hltvClient.on(Events.ClientReady, async function (client) {
       return contentBlocks.map(
         (content) => 
           content.textContent
-            .replace(/\s+/g, ' ')
-            .trim()
+            .replace(/\n/g, '\n') // Replace line breaks with '\n** **'*/
+            .replace(/[^\S\n]+/g, ' ') // Replace consecutive white spaces (excluding tabs) with a single space
       )
     }, contentSelector)
 
-    console.log(content.join('\n\n'))
-    news.content = content.join('\n\n')
+    news.content = limitedSplit(content[0], 1999)
+    console.log(news.content)
+    
     const thread = await postNewsThread(news, channel, webhook)
     if (!thread) {
       break
@@ -106,7 +113,7 @@ hltvClient.login(process.env.HLTV_BOT_SECRET)
  */
 export async function postNewsThread(news, channel, webhook) {
   try {
-    const message = await channel.send(news.title)
+    const message = await channel.send(`> **${news.title}**`)
 
     // TODO - treat images
     //await channel.send({ files: [{attachment: 'https://img-cdn.hltv.org/gallerypicture/Kj061TW8kIEkXt_qnKPPMQ.jpg', name: 'heading-img'}] })
@@ -117,12 +124,13 @@ export async function postNewsThread(news, channel, webhook) {
       reason: 'news',
     })
 
-    await webhook.send({
-      content: news.content,
-      threadId: thread.id,
-    })
+    for (const content of news.content) {
+      await webhook.send({
+        content: content,
+        threadId: thread.id,
+      })
+    }
     
-    console.log('threadid:', thread.id)
     console.log('CREATED THREAD: ', thread.name)
 
     return thread.name
@@ -132,4 +140,24 @@ export async function postNewsThread(news, channel, webhook) {
 
     return null
   }
+}
+
+function limitedSplit(text, limit) {
+  if (text.length <= limit) {
+    return [text];
+  }
+
+  const parts = [];
+
+  // Calculate the number of parts needed
+  const numParts = Math.ceil(text.length / limit);
+
+  for (let i = 0; i < numParts; i++) {
+    const start = i * limit;
+    const end = (i + 1) * limit;
+
+    parts.push(text.substring(start, end));
+  }
+
+  return parts;
 }
