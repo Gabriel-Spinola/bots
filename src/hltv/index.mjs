@@ -1,7 +1,7 @@
 import 'dotenv/config'
-import puppeteer from "puppeteer";
-import { Client, Events, GatewayIntentBits, ThreadAutoArchiveDuration } from "discord.js";
-import { newsChannelId } from '../config.mjs';
+import puppeteer from "puppeteer"
+import { Client, Events, GatewayIntentBits, ThreadAutoArchiveDuration } from "discord.js"
+import { newsChannelId } from '../config.mjs'
 
 const BASE_URL = 'https://www.hltv.org'
 
@@ -74,24 +74,32 @@ hltvClient.on(Events.ClientReady, async function (client) {
     page = await browser.newPage()
 
     console.log('GOTO PAGE: ', news.link)
-    await page.goto(`${BASE_URL}${news.link}`);
+    await page.goto(`${BASE_URL}${news.link}`)
 
     const contentSelector = '.newstext-con'
     const content = await page.evaluate((selector) => {
       const contentBlocks = Array.from(document.querySelectorAll(selector))
 
       return contentBlocks.map(
-        (content) => 
-          content.textContent
-            .replace(/\n/g, '\n') // Replace line breaks with '\n** **'*/
-            .replace(/[^\S\n]+/g, ' ') // Replace consecutive white spaces (excluding tabs) with a single space
+        (content) => {
+          return {
+            text: content.textContent
+              .replace(/[^\S\n]+/g, ' '), // Replace consecutive white spaces (excluding tabs) with a single space
+            img: Array.from(content.querySelector('.image-con').children)
+              .find(child => child.hasAttribute('srcset'))
+              ?.getAttribute('srcset')
+              .match(/(https?:\/\/[^\s?]+)/g)
+              .at(0) // Extract the base of the url
+          }
+        }
       )
     }, contentSelector)
 
-    news.content = limitedSplit(content[0], 1999)
-    console.log(news.content)
+    console.log(content[0].img.forEach(child => child.attributes))
+    news.content = limitedSplit(content[0].text, 1999)
+    //console.log(news.content)
     
-    const thread = await postNewsThread(news, channel, webhook)
+    const thread = await postNewsThread(news, channel, webhook, content[0].img)
     if (!thread) {
       break
     }
@@ -111,12 +119,13 @@ hltvClient.login(process.env.HLTV_BOT_SECRET)
  * @param { Channel } channel
  * @param {*} webhook
  */
-export async function postNewsThread(news, channel, webhook) {
+export async function postNewsThread(news, channel, webhook, img) {
   try {
     const message = await channel.send(`> **${news.title}**`)
 
-    // TODO - treat images
-    //await channel.send({ files: [{attachment: 'https://img-cdn.hltv.org/gallerypicture/Kj061TW8kIEkXt_qnKPPMQ.jpg', name: 'heading-img'}] })
+    if (img) {
+      await channel.send({ files: [{attachment: img, name: 'heading-img'}] })
+    }
 
     const thread = await message.startThread({
       name: news.title,
@@ -144,20 +153,20 @@ export async function postNewsThread(news, channel, webhook) {
 
 function limitedSplit(text, limit) {
   if (text.length <= limit) {
-    return [text];
+    return [text]
   }
 
-  const parts = [];
+  const parts = []
 
   // Calculate the number of parts needed
-  const numParts = Math.ceil(text.length / limit);
+  const numParts = Math.ceil(text.length / limit)
 
   for (let i = 0; i < numParts; i++) {
-    const start = i * limit;
-    const end = (i + 1) * limit;
+    const start = i * limit
+    const end = (i + 1) * limit
 
-    parts.push(text.substring(start, end));
+    parts.push(text.substring(start, end))
   }
 
-  return parts;
+  return parts
 }
