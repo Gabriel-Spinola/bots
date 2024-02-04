@@ -104,9 +104,19 @@ client.on(Events.ClientReady, (client) => {
   // NOTE - task for preventing production server pausing from inactivity
   const preventInactivityJob = () => {
     try {
-      debugChannel.send("INACTIVITY MESSAGE")
+      (async () => {
+        const response = await fetch('https://catfact.ninja/fact')
 
+        if (response.status != 200) {
+          throw new Error("failed")
+        }
+
+        const data = await response.json()
+
+        debugChannel.send(data.fact)
+      })()
     } catch(error) {
+      debugChannel.send("Failed to send cat facts")
       console.error('FAILED WHEN TRYING TO SEND THE MESSAGE')
       console.error(error)
     }
