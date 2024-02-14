@@ -25,8 +25,8 @@ const app = express()
 app.use(express.json())
 
 // PRODUCTION ID -> 1186041173530398841
-// DEV ID        -> 1186711941465505862
-const chanelId = '1186041173530398841'
+// DEV ID        -> 1185354171986235454
+const chanelId = '1185354171986235454'
 const interval = 1000 * 30
 
 const client = new Client({ intents: [
